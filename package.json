@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "deploy-dev": "cdk deploy -c env=DEV --profile -c namespace=DEV"
+    "deploy-dev": "cdk deploy -c env=DEV --profile your_profile_name -c namespace=your_namespace_name"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.160",
