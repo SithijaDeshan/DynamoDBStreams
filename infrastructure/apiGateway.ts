@@ -8,6 +8,7 @@ interface ApiGatewayProps {
 
 export class ApiGateway extends Construct {
   public readonly api: apigateway.RestApi;
+  public readonly apiKey: apigateway.ApiKey;
 
   constructor(scope: Construct, id: string, props: ApiGatewayProps) {
     super(scope, id);
@@ -17,7 +18,7 @@ export class ApiGateway extends Construct {
       apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
     });
 
-    const apiKey = new apigateway.ApiKey(this, `${id}-ApiKey`, {
+    this.apiKey = new apigateway.ApiKey(this, `${id}-ApiKey`, {
       apiKeyName: `${props.apiName}-key`,
     });
 
@@ -26,7 +27,7 @@ export class ApiGateway extends Construct {
       apiStages: [{ api: this.api, stage: this.api.deploymentStage }],
     });
 
-    usagePlan.addApiKey(apiKey);
+    usagePlan.addApiKey(this.apiKey);
   }
 
   /**
