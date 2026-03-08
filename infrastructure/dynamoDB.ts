@@ -7,6 +7,7 @@ interface DynamoDBTableProps {
   partitionKey: { name: string; type: dynamodb.AttributeType };
   sortKey?: { name: string; type: dynamodb.AttributeType };
   billingMode?: dynamodb.BillingMode;
+  stream?: dynamodb.StreamViewType;
 }
 
 export class DynamoDBTable extends Construct {
@@ -21,6 +22,7 @@ export class DynamoDBTable extends Construct {
       sortKey: props.sortKey,
       billingMode: props.billingMode || dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      stream: props.stream,
     });
   }
 }

@@ -4,6 +4,7 @@ import { Environment, StackProps } from "aws-cdk-lib";
 import { DDBStreamsLambda } from "./lambda";
 import { DynamoDBTable } from "./dynamoDB";
 import { ApiGateway } from "./apiGateway";
+import * as lambda from "aws-cdk-lib/aws-lambda";
 
 interface DDBStreamsStackProps extends StackProps {
   envName: string;
@@ -25,11 +26,24 @@ export class DDBStreams extends cdk.Stack {
         type: cdk.aws_dynamodb.AttributeType.STRING,
       },
       sortKey: { name: "date", type: cdk.aws_dynamodb.AttributeType.STRING },
+      stream: cdk.aws_dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
     });
 
-    new DDBStreamsLambda(this, "ddbstreams-lambda", {
+    // Stream Lambda
+    const streamsLambda = new DDBStreamsLambda(this, "ddbstreams-lambda", {
       functionName: `ddbstreams-lambda-${environment}`,
-      path: `../src/functions/handler.ts`,
+      path: `../src/functions/Stream/handler.ts`,
+    });
+
+    // Grant stream read access
+    coursesTable.table.grantStreamRead(streamsLambda.lambda);
+
+    // Wire stream to lambda
+    new lambda.EventSourceMapping(this, "CoursesStreamMapping", {
+      target: streamsLambda.lambda,
+      eventSourceArn: coursesTable.table.tableStreamArn!,
+      startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+      batchSize: 5,
     });
 
     // Courses Lambda
@@ -56,8 +70,7 @@ export class DDBStreams extends cdk.Stack {
     //outputs
     new cdk.CfnOutput(this, "ApiKeyId", {
       value: api.apiKey.keyId,
-      description:
-        "API Key",
+      description: "API Key",
     });
   }
 }
